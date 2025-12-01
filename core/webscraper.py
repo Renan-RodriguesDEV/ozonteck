@@ -56,6 +56,7 @@ class WebScraper:
         self.page.goto(self.url + "universal/store-internal")
         try:
             self.page.select_option('select[id="state_id_store"]', state)
+            print(f"Estado {state} selecionado com sucesso.")
             return True
         except TimeoutError as e:
             print("Falha ao selecionar o estado:", str(e))
@@ -65,6 +66,7 @@ class WebScraper:
         centers = [
             e.inner_text() for e in self.page.query_selector_all('strong[class="mb-1"]')
         ]
+        print(f"Centros encontrados: {centers}")
         return centers
 
     def select_center(self, center: str):
@@ -75,6 +77,8 @@ class WebScraper:
             return False
         try:
             card.query_selector('//button[text()="Selecionar"]').click()
+            self.page.wait_for_load_state("load")
+            print("Centro selecionado com sucesso.")
         except TimeoutError as e:
             print("Falha ao selecionar o centro:", str(e))
             return False
@@ -89,10 +93,13 @@ class WebScraper:
         self.page.goto(self.url + f"universal/store-show?search={product}&category=")
         products = self.page.query_selector_all('//span[@class="fw-bold mb-sm-2"]')
         if len(products) > 1:
+            print(f"Produtos encontrados: {[e.inner_text() for e in products]}")
             return [e.inner_text() for e in products]
         if quantity > 0:
             self.page.fill('input[type="text"]', str(quantity))
             self.page.click('//button[contains(@class,"button-cart")]')
+        self.page.wait_for_load_state("load")
+        print(f"Produto {products[0].inner_text()} adicionado ao carrinho.")
         return products[0].inner_text()
 
     def buy(self):
@@ -101,6 +108,7 @@ class WebScraper:
         try:
             self.page.click('//span[contains(text(),"endereço")]')
             self.page.click('//button[@type="submit" and contains(text(),"pagamento")]')
+            print("Compra finalizada com sucesso.")
             return True
         except TimeoutError as e:
             print("Falha ao finalizar a compra:", str(e))

@@ -10,7 +10,9 @@ SENHA = os.getenv("SENHA")
 
 @pytest.mark.search
 def test_search():
-    search_product(USUARIO, SENHA, "soberano")
+    products = search_product(USUARIO, SENHA, "soberano")
+    [print(product) for product in products]
+    assert len(products) > 0
 
 
 @pytest.mark.centers
