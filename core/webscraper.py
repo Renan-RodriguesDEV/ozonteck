@@ -33,8 +33,8 @@ class WebScraper:
 
     def login(self, username, password):
         self.page.goto(self.url + "login")
-        self.page.wait_for_load_state("networkidle")
-        if self.page.url != self.url + "login":
+        self.page.wait_for_load_state("load")
+        if self.page.url != f"{self.url}login":
             return True
         self.page.fill('input[type="email"]', username)
         self.page.fill('input[type="password"]', password)
@@ -42,7 +42,8 @@ class WebScraper:
         if self.page.wait_for_selector(
             ".modal-content", state="visible", timeout=10_000
         ):
-            self.page.click('closeModal("modal-updateAddress")')
+            self.page.evaluate('closeModal("modal-updateAddress")')
+            self.page.evaluate('$("#modal-message").remove()')
         try:
             self.page.wait_for_selector(".layout-fluid", timeout=60_000)
         except TimeoutError as e:
@@ -67,10 +68,16 @@ class WebScraper:
         return centers
 
     def select_center(self, center: str):
-        cards = self.page.locator('//div[@class="card-body"]').filter(has_text=center)
-        if cards.count() == 0:
+        card = self.page.query_selector(
+            f'//div[@class="card-body"]//strong[text()="{center}"]/../..'
+        )
+        if not card:
             return False
-        cards.nth(0).locator('xpath=.//button[contains(text(),"Selecionar")]').click()
+        try:
+            card.query_selector('//button[text()="Selecionar"]').click()
+        except TimeoutError as e:
+            print("Falha ao selecionar o centro:", str(e))
+            return False
         return True
 
     def search(
