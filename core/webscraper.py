@@ -7,7 +7,7 @@ class WebScraper:
     def __init__(self, url: str, username: str, headless: bool = True):
         self.url = url
         self.username = username
-        self.data_dir = Path(f"./{self.username}")
+        self.data_dir = Path(f"./data/{self.username}")
         self.headless = headless
         self.playwright = None
         self.browser = None
