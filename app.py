@@ -1,4 +1,5 @@
-from concurrent.futures import ProcessPoolExecutor
+import asyncio
+import os
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -7,7 +8,8 @@ from main import buy_cart, get_centers, search_product, select_center
 from schemas.schemas import UserSchema
 
 app = FastAPI(title="Ozoneteck API", version="1.0.0")
-executor = ProcessPoolExecutor()
+if os.name == "nt":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 
 @app.get("/states")

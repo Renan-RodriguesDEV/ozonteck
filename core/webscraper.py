@@ -77,7 +77,9 @@ class WebScraper:
             return False
         try:
             card.query_selector('//button[text()="Selecionar"]').click()
-            self.page.wait_for_load_state("load")
+            self.page.wait_for_url(
+                "https://office.grupoozonteck.com/universal/store-show"
+            )
             print("Centro selecionado com sucesso.")
         except TimeoutError as e:
             print("Falha ao selecionar o centro:", str(e))
@@ -91,7 +93,11 @@ class WebScraper:
     ):
         # https://office.grupoozonteck.com/universal/store-show?search=Omega&category=
         self.page.goto(self.url + f"universal/store-show?search={product}&category=")
+        self.page.wait_for_load_state("load")
         products = self.page.query_selector_all('//span[@class="fw-bold mb-sm-2"]')
+        if not products:
+            print("Nenhum produto encontrado.")
+            return []
         if len(products) > 1:
             print(f"Produtos encontrados: {[e.inner_text() for e in products]}")
             return [e.inner_text() for e in products]
