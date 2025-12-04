@@ -51,12 +51,13 @@ Em Windows o arquivo `app.py` já força `asyncio.WindowsProactorEventLoopPolicy
 
 ## Endpoints
 
-| Método | Rota        | Corpo esperado                                                          | Descrição                                      |
-| ------ | ----------- | ----------------------------------------------------------------------- | ---------------------------------------------- |
-| GET    | `/states`   | —                                                                       | Lista fixa dos estados aceitos pela plataforma |
-| POST   | `/centers/` | `{ "username", "password", "state" }`                                   | Retorna os centros disponíveis para o estado   |
-| POST   | `/search/`  | `{ "username", "password", "state", "center", "product", "quantity"? }` | Seleciona um centro e busca/adiciona produtos  |
-| POST   | `/buy/`     | `{ "username", "password" }`                                            | Finaliza a compra com o carrinho atual         |
+| Método | Rota         | Corpo esperado                                                          | Descrição                                      |
+| ------ | ------------ | ----------------------------------------------------------------------- | ---------------------------------------------- |
+| GET    | `/states`    | —                                                                       | Lista fixa dos estados aceitos pela plataforma |
+| POST   | `/centers/`  | `{ "username", "password", "state" }`                                   | Retorna os centros disponíveis para o estado   |
+| POST   | `/search/`   | `{ "username", "password", "state", "center", "product", "quantity"? }` | Seleciona um centro e busca/adiciona produtos  |
+| POST   | `/products/` | `{ "username", "password", "state", "center" }`                         | Lista os produtos presentes no carrinho        |
+| POST   | `/buy/`      | `{ "username", "password" }`                                            | Finaliza a compra com o carrinho atual         |
 
 ### `/states`
 
@@ -99,6 +100,21 @@ curl -X POST http://localhost:8000/search/ \
 
 - Quando `quantity > 0` o produto é adicionado ao carrinho através da automação Playwright.
 - Se o centro não for encontrado, a rota dispara `HTTPException(404)`.
+
+### `/products/`
+
+```bash
+curl -X POST http://localhost:8000/products/ \
+     -H "Content-Type: application/json" \
+     -d '{
+           "username": "renanrodrigues7110",
+           "password": "#Admin2025",
+           "state": "São Paulo",
+           "center": "Ozonteck Praia Grande - SP"
+         }'
+```
+
+Resposta: lista de produtos presentes no carrinho retornados por `WebScraper.products()`.
 
 ### `/buy/`
 
