@@ -51,12 +51,13 @@ Em Windows o arquivo `app.py` já força `asyncio.WindowsProactorEventLoopPolicy
 
 ## Endpoints
 
-| Método | Rota        | Corpo esperado                                                          | Descrição                                      |
-| ------ | ----------- | ----------------------------------------------------------------------- | ---------------------------------------------- |
-| GET    | `/states`   | —                                                                       | Lista fixa dos estados aceitos pela plataforma |
-| POST   | `/centers/` | `{ "username", "password", "state" }`                                   | Retorna os centros disponíveis para o estado   |
-| POST   | `/search/`  | `{ "username", "password", "state", "center", "product", "quantity"? }` | Seleciona um centro e busca/adiciona produtos  |
-| POST   | `/buy/`     | `{ "username", "password" }`                                            | Finaliza a compra com o carrinho atual         |
+| Método | Rota         | Corpo esperado                                                          | Descrição                                      |
+| ------ | ------------ | ----------------------------------------------------------------------- | ---------------------------------------------- |
+| GET    | `/states`    | —                                                                       | Lista fixa dos estados aceitos pela plataforma |
+| POST   | `/centers/`  | `{ "username", "password", "state" }`                                   | Retorna os centros disponíveis para o estado   |
+| POST   | `/products/` | `{ "username", "password", "state", "center" }`                         | Lista os produtos do centro selecionado        |
+| POST   | `/search/`   | `{ "username", "password", "state", "center", "product", "quantity"? }` | Seleciona um centro e busca/adiciona produtos  |
+| POST   | `/buy/`      | `{ "username", "password" }`                                            | Finaliza a compra com o carrinho atual         |
 
 ### `/states`
 
@@ -74,13 +75,41 @@ Resposta:
 curl -X POST http://localhost:8000/centers/ \
      -H "Content-Type: application/json" \
      -d '{
-           "username": "renanrodrigues7110",
-           "password": "#Admin2025",
+           "username": "your-username",
+           "password": "your-password",
            "state": "São Paulo"
          }'
 ```
 
 Resposta: lista de centros retornados por `WebScraper.list_centers()`.
+
+### `/products/`
+
+```bash
+curl -X POST http://localhost:8000/products/ \
+     -H "Content-Type: application/json" \
+     -d '{
+           "username": "your-username",
+           "password": "your-password",
+           "state": "São Paulo",
+           "center": "Ozonteck Praia Grande - SP"
+         }'
+```
+
+Resposta:
+
+```json
+[
+  {
+    "code": "12345",
+    "name": "Omega 3 60 cápsulas",
+    "price": 89.9,
+    "stock": 12
+  }
+]
+```
+
+A lista reflete os produtos exibidos pelo portal para o centro selecionado. Se o centro não for encontrado ou não tiver catálogo disponível, a rota responde com `HTTPException(404)`.
 
 ### `/search/`
 
@@ -88,8 +117,8 @@ Resposta: lista de centros retornados por `WebScraper.list_centers()`.
 curl -X POST http://localhost:8000/search/ \
      -H "Content-Type: application/json" \
      -d '{
-           "username": "renanrodrigues7110",
-           "password": "#Admin2025",
+           "username": "your-username",
+           "password": "your-password",
            "state": "São Paulo",
            "center": "Ozonteck Praia Grande - SP",
            "product": "Omega",
@@ -106,8 +135,8 @@ curl -X POST http://localhost:8000/search/ \
 curl -X POST http://localhost:8000/buy/ \
      -H "Content-Type: application/json" \
      -d '{
-           "username": "renanrodrigues7110",
-           "password": "#Admin2025"
+           "username": "your-username",
+           "password": "your-password"
          }'
 ```
 
