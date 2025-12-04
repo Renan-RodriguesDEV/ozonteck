@@ -4,8 +4,8 @@ import os
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
-from main import buy_cart, get_centers, search_product, select_center
-from schemas.schemas import UserCenterSchema, UserSchema, UserSearchSchema
+from main import buy_cart, get_centers, list_products, search_product, select_center
+from schemas.schemas import UserCenterSchema, UserSchema, UserSchemaProduct, UserSearchSchema
 
 app = FastAPI(title="Ozoneteck API", version="1.0.0")
 if os.name == "nt":
@@ -54,6 +54,14 @@ def states():
 
 @app.post("/centers/")
 def centers(user: UserCenterSchema):
+    """Lista os centros de distribuição disponiveis em determinado estado.
+
+    Args:
+        user (UserCenterSchema): Usuario com username, password e state.
+
+    Returns:
+        JSON: Lista de centros de distribuição.
+    """
     return {"centers": get_centers(user.username, user.password, user.state)}
 
 
@@ -95,6 +103,21 @@ def buy(user: UserSchema):
         "message": "success" if is_buy else "failed",
         "status": 200 if is_buy else 400,
     }
+
+
+@app.post("/products/")
+def products(user: UserSchemaProduct):
+    """Lista os produtos presentes no carrinho.
+
+    Args:
+        user (UserSchema): Usuario com username e password.
+
+    Returns:
+        JSON: Lista de produtos no carrinho.
+    """
+    if not select_center(user.username, user.password, user.state, user.center):
+        raise HTTPException(404, "Center not found")
+    return {"products": list_products(user.username, user.password)}
 
 
 if __name__ == "__main__":

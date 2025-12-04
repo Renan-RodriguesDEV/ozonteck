@@ -34,7 +34,7 @@ def search_product(
     with WebScraper(url=URL_BASE, username=username, headless=False) as scraper:
         if scraper.login(username, password):
             return scraper.search(product, quantity)
-    return None
+    return []
 
 
 def buy_cart(
@@ -45,3 +45,13 @@ def buy_cart(
         if scraper.login(username, password):
             return scraper.buy()
     return False
+
+
+def list_products(
+    username: str,
+    password: str,
+):
+    with WebScraper(url=URL_BASE, username=username, headless=False) as scraper:
+        if scraper.login(username, password):
+            return scraper.products()
+    return []

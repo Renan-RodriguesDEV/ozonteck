@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from playwright.sync_api import TimeoutError, sync_playwright
+from playwright.sync_api import ElementHandle, TimeoutError, sync_playwright
 
 
 class WebScraper:
@@ -42,10 +42,13 @@ class WebScraper:
         if self.page.wait_for_selector(
             ".modal-content", state="visible", timeout=10_000
         ):
-            self.page.evaluate('closeModal("modal-updateAddress")')
-            self.page.evaluate('$("#modal-message").remove()')
+            try:
+                self.page.evaluate('closeModal("modal-updateAddress")')
+                self.page.evaluate('$("#modal-message").remove()')
+            except Exception as e:
+                print("No modal to close:", str(e))
         try:
-            self.page.wait_for_selector(".layout-fluid", timeout=60_000)
+            self.page.wait_for_url(self.url, timeout=60_000)
         except TimeoutError as e:
             print("O login falhou:", str(e))
             return False
@@ -94,19 +97,19 @@ class WebScraper:
         # https://office.grupoozonteck.com/universal/store-show?search=Omega&category=
         self.page.goto(self.url + f"universal/store-show?search={product}&category=")
         self.page.wait_for_load_state("load")
-        products = self.page.query_selector_all('//span[@class="fw-bold mb-sm-2"]')
+        products = self.page.query_selector_all('//div[@class="card-body"]')
         if not products:
             print("Nenhum produto encontrado.")
             return []
         if len(products) > 1:
             print(f"Produtos encontrados: {[e.inner_text() for e in products]}")
-            return [e.inner_text() for e in products]
+            return [self.product_details(e) for e in products]
         if quantity > 0:
             self.page.fill('input[type="text"]', str(quantity))
             self.page.click('//button[contains(@class,"button-cart")]')
         self.page.wait_for_load_state("load")
         print(f"Produto {products[0].inner_text()} adicionado ao carrinho.")
-        return products[0].inner_text()
+        return self.product_details(products[0])
 
     def buy(self):
         # https://office.grupoozonteck.com/universal/store-cart
@@ -114,8 +117,31 @@ class WebScraper:
         try:
             self.page.click('//span[contains(text(),"endereço")]')
             self.page.click('//button[@type="submit" and contains(text(),"pagamento")]')
+            self.page.click('//button[@id="pay-with-balance"]')
+            self.page.click('//button[@id="confirm-payment"]')
             print("Compra finalizada com sucesso.")
             return True
         except TimeoutError as e:
             print("Falha ao finalizar a compra:", str(e))
         return False
+
+    def product_details(self, card: ElementHandle):
+        name = card.query_selector('//span[@class="fw-bold mb-sm-2"]')
+        description = card.query_selector('//p[@class="card-text"]')
+        priece = card.query_selector('//strong[contains(text(),"R$")]')
+        print(f"Detalhes do produto extraídos com sucesso. {name, description, priece}")
+        return {
+            "name": name.inner_text() if name else "",
+            "description": description.inner_text() if description else "",
+            "priece": priece.inner_text() if priece else "",
+        }
+
+    def products(self):
+        self.page.goto(self.url + "universal/store-show")
+        self.page.wait_for_url(self.url + "universal/store-show")
+        self.page.evaluate(
+            "window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })"
+        )
+        products = self.page.query_selector_all('//div[@class="card-body"]')
+        print(f"Produtos encontrados: {len(products)}")
+        return [self.product_details(e) for e in products]
