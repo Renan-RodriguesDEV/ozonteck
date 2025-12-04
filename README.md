@@ -83,6 +83,12 @@ curl -X POST http://localhost:8000/centers/ \
 
 Resposta: lista de centros retornados por `WebScraper.list_centers()`.
 
+```json
+{
+  "centers": ["Ozonteck Praia Grande - SP", "Ozonteck São Paulo - SP"]
+}
+```
+
 ### `/products/`
 
 ```bash
@@ -101,7 +107,6 @@ Resposta:
 ```json
 [
   {
-    "code": "12345",
     "name": "Omega 3 60 cápsulas",
     "price": 89.9,
     "stock": 12
@@ -124,6 +129,21 @@ curl -X POST http://localhost:8000/search/ \
            "product": "Omega",
            "quantity": 2
          }'
+```
+
+Resposta:
+
+```json
+"products":
+{
+[
+  {
+    "name": "Omega 3 60 cápsulas",
+    "price": 89.9,
+    "stock": 12
+  }
+]
+}
 ```
 
 - Quando `quantity > 0` o produto é adicionado ao carrinho através da automação Playwright.
